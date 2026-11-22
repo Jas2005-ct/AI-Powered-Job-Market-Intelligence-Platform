@@ -30,6 +30,10 @@ def test_extract_skills_finds_canonical_names():
     assert "SQL" in skills and "Power BI" in skills and "Excel" in skills
 
 
+def test_single_letter_skill_uses_word_boundaries():
+    assert "R" not in extract_skills("We are hiring a data analyst to build reports.")
+
+
 def test_clean_jobs_deduplicates():
     raw = [
         {

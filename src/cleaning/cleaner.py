@@ -99,12 +99,18 @@ def parse_experience(title: str, description: str) -> str:
 
 
 def extract_skills(description: str) -> list[str]:
-    """Find canonical skills mentioned in a description."""
+    """Find canonical skills mentioned in a description.
+
+    Word boundaries matter: without them, the alias "R" would match the letter
+    "r" in almost every English word and inflate demand to ~100%.
+    """
     lower = description.lower()
     found = set()
     for canonical, aliases in SKILL_ALIASES.items():
-        if any(alias.lower() in lower for alias in aliases):
-            found.add(canonical)
+        for alias in aliases:
+            if re.search(rf"\b{re.escape(alias.lower())}\b", lower):
+                found.add(canonical)
+                break
     return sorted(found)
 
 

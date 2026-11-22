@@ -188,3 +188,48 @@ def work_mode_mix(engine) -> pd.DataFrame:
         FROM jobs GROUP BY work_mode ORDER BY postings DESC
     """
     return _df(engine, sql)
+
+
+def skills_by_experience(engine) -> pd.DataFrame:
+    """Skill demand split by junior/mid/senior postings."""
+    sql = """
+        SELECT
+            s.name AS skill,
+            j.experience_level,
+            COUNT(*) AS postings
+        FROM skills s
+        JOIN job_skills js ON js.skill_id = s.id
+        JOIN jobs j ON j.id = js.job_id
+        GROUP BY s.name, j.experience_level
+        ORDER BY postings DESC
+    """
+    return _df(engine, sql)
+
+
+def skill_growth(engine) -> pd.DataFrame:
+    """First-week vs last-week posting counts for each skill, with % growth."""
+    week_expr = (
+        "strftime('%Y-%W', j.posted_at)"
+        if engine.dialect.name == "sqlite"
+        else "to_char(date_trunc('week', j.posted_at), 'YYYY-IW')"
+    )
+    sql = f"""
+        WITH weekly AS (
+            SELECT {week_expr} AS week, s.name AS skill, COUNT(*) AS postings
+            FROM job_skills js
+            JOIN jobs j ON j.id = js.job_id
+            JOIN skills s ON s.id = js.skill_id
+            GROUP BY week, s.name
+        ), ranked AS (
+            SELECT *,
+                   FIRST_VALUE(postings) OVER (PARTITION BY skill ORDER BY week) AS first_week,
+                   FIRST_VALUE(postings) OVER (PARTITION BY skill ORDER BY week DESC) AS last_week
+            FROM weekly
+        )
+        SELECT skill, first_week, last_week,
+               ROUND(100.0 * (last_week - first_week) / NULLIF(first_week, 0), 1) AS growth_pct
+        FROM ranked
+        GROUP BY skill, first_week, last_week
+        ORDER BY growth_pct DESC
+    """
+    return _df(engine, sql)

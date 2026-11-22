@@ -33,6 +33,8 @@ def run(count: int | None = None) -> dict:
         "skill_combinations": sql_queries.skill_combinations(engine),
         "skill_trends": sql_queries.skill_trends(engine),
         "work_mode_mix": sql_queries.work_mode_mix(engine),
+        "skills_by_experience": sql_queries.skills_by_experience(engine),
+        "skill_growth": sql_queries.skill_growth(engine),
     }
 
     for name, frame in analyses.items():

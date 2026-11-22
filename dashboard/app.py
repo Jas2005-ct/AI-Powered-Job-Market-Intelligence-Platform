@@ -32,6 +32,15 @@ st.sidebar.markdown(
     """
 )
 
+if st.sidebar.button("🔄 Refresh data"):
+    from src.pipeline import run
+
+    with st.spinner("Rebuilding the dataset..."):
+        run()
+    st.cache_data.clear()
+    st.sidebar.success("Data refreshed!")
+    st.rerun()
+
 summary = load_table("executive_summary")
 total_jobs = int(summary["total_jobs"].iloc[0]) if not summary.empty else 0
 

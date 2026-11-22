@@ -24,6 +24,8 @@ TABLES = [
     "skill_combinations",
     "skill_trends",
     "work_mode_mix",
+    "skills_by_experience",
+    "skill_growth",
 ]
 
 

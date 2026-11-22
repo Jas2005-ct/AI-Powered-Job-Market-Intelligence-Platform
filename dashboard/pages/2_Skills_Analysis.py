@@ -50,6 +50,31 @@ if not empty_guard(trends, "Add more dated postings to see trends."):
     fig.update_layout(height=420, xaxis_title="Week", yaxis_title="Postings")
     st.plotly_chart(fig, use_container_width=True)
 
+st.subheader("Skill Demand by Experience Level")
+by_exp = data["skills_by_experience"]
+if not empty_guard(by_exp):
+    top_skills = skills["skill"].tolist()[:10] if not skills.empty else []
+    subset = by_exp[by_exp["skill"].isin(top_skills)]
+    fig = px.bar(
+        subset,
+        x="skill",
+        y="postings",
+        color="experience_level",
+        barmode="stack",
+        labels={"postings": "Postings"},
+    )
+    fig.update_layout(height=420)
+    st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("Skill Growth (first vs last observed week)")
+growth = data["skill_growth"]
+if not empty_guard(growth):
+    st.dataframe(
+        growth.head(10).style.format({"growth_pct": "{:.1f}%"}),
+        hide_index=True,
+        use_container_width=True,
+    )
+
 st.subheader("Skills That Appear Together")
 combos = data["skill_combinations"]
 if not empty_guard(combos):

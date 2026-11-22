@@ -71,21 +71,23 @@ def highest_paying_skills(engine, limit: int = 15) -> pd.DataFrame:
         WITH skill_salary AS (
             SELECT
                 s.name AS skill,
+                j.currency,
                 AVG((j.salary_min + j.salary_max) / 2) AS avg_salary,
                 COUNT(*) AS postings
             FROM skills s
             JOIN job_skills js ON js.skill_id = s.id
             JOIN jobs j ON j.id = js.job_id
             WHERE j.salary_min IS NOT NULL AND j.salary_max IS NOT NULL
-            GROUP BY s.name
+            GROUP BY s.name, j.currency
         )
         SELECT
             skill,
+            currency,
             ROUND(avg_salary, 0) AS avg_salary,
             postings,
-            RANK() OVER (ORDER BY avg_salary DESC) AS salary_rank
+            RANK() OVER (PARTITION BY currency ORDER BY avg_salary DESC) AS salary_rank
         FROM skill_salary
-        ORDER BY avg_salary DESC
+        ORDER BY currency, avg_salary DESC
         LIMIT :limit
     """
     return _df(engine, sql, {"limit": limit})
@@ -95,14 +97,15 @@ def salary_by_experience(engine) -> pd.DataFrame:
     sql = """
         SELECT
             j.experience_level,
+            j.currency,
             COUNT(*) AS postings,
             ROUND(AVG(j.salary_min), 0) AS avg_min,
             ROUND(AVG(j.salary_max), 0) AS avg_max,
             ROUND(AVG((j.salary_min + j.salary_max) / 2), 0) AS avg_midpoint
         FROM jobs j
         WHERE j.salary_min IS NOT NULL
-        GROUP BY j.experience_level
-        ORDER BY avg_midpoint DESC
+        GROUP BY j.experience_level, j.currency
+        ORDER BY j.currency, avg_midpoint DESC
     """
     return _df(engine, sql)
 
@@ -111,14 +114,15 @@ def salary_by_city(engine, limit: int = 10) -> pd.DataFrame:
     sql = """
         SELECT
             j.city,
+            j.currency,
             COUNT(*) AS postings,
             ROUND(AVG((j.salary_min + j.salary_max) / 2), 0) AS avg_salary,
             ROUND(MIN(j.salary_min), 0) AS min_salary,
             ROUND(MAX(j.salary_max), 0) AS max_salary
         FROM jobs j
         WHERE j.salary_min IS NOT NULL
-        GROUP BY j.city
-        ORDER BY avg_salary DESC
+        GROUP BY j.city, j.currency
+        ORDER BY j.currency, avg_salary DESC
         LIMIT :limit
     """
     return _df(engine, sql, {"limit": limit})

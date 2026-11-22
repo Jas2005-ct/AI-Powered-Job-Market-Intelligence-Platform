@@ -68,7 +68,11 @@ def build_context(data: dict) -> dict:
         ]
     if paying is not None and not paying.empty:
         context["highest_paying_skills"] = [
-            {"skill": r.skill, "avg_salary": float(r.avg_salary), "currency": "mixed (INR/USD)"}
+            {
+                "skill": r.skill,
+                "avg_salary": float(r.avg_salary),
+                "currency": getattr(r, "currency", "N/A"),
+            }
             for r in paying.head(8).itertuples()
         ]
     if combos is not None and not combos.empty:

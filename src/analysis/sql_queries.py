@@ -130,7 +130,8 @@ def salary_distribution(engine) -> pd.DataFrame:
             j.id,
             (j.salary_min + j.salary_max) / 2 AS midpoint,
             j.experience_level,
-            j.city
+            j.city,
+            j.currency
         FROM jobs j
         WHERE j.salary_min IS NOT NULL AND j.salary_max IS NOT NULL
     """

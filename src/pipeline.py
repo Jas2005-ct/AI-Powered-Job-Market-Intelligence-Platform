@@ -29,6 +29,7 @@ def run(count: int | None = None) -> dict:
         "highest_paying_skills": sql_queries.highest_paying_skills(engine),
         "salary_by_experience": sql_queries.salary_by_experience(engine),
         "salary_by_city": sql_queries.salary_by_city(engine),
+        "salary_distribution": sql_queries.salary_distribution(engine),
         "skill_combinations": sql_queries.skill_combinations(engine),
         "skill_trends": sql_queries.skill_trends(engine),
         "work_mode_mix": sql_queries.work_mode_mix(engine),
